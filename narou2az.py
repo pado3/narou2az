@@ -315,8 +315,7 @@ def main():
     textF = args.text
     # 作品情報チェック、開ければNコード[0]と全話数[1]と表紙[2]を取得、不具合あれば終了
     info = get_info(args.ncode, textF, args.noin)
-    # なろうリーダーでコピペすると大文字
-    ncode = info[0].lower()
+    ncode = info[0]
     # 小説を保存するフォルダがなければ作成
     set_novel_dir(ncode)
     # 取得する部分番号のsetを取得する。info[1]が全話数
