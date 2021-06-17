@@ -15,6 +15,8 @@ Make Aozora-bunko format text from syosetu.com (Syosetsuka ni narou)
 
 2021/05/03 「なろう一括取得から青空文庫形式」の大文字NCODE対応(*1) https://pado.tea-nifty.com/top/2021/05/post-d496bf.html 
 
+2021/05/03 「なろう一括取得から青空文庫形式」のバージョン管理をGitHubに移します（2021/06/17追記） https://pado.tea-nifty.com/top/2021/05/post-18da7d.html 
+
 *1 : その時点での旧版も掲載しています
 
 改変などはご自由に。ご利用は自己責任で。
