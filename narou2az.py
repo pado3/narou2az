@@ -251,6 +251,9 @@ def get_honbun(ncode, part, pre_chap, textF):
         htm = htm.replace("<ruby><rb>", "<ruby>｜<rb>")
         htm = htm.replace("<rp>(</rp>", "<rp>《</rp>")
         htm = htm.replace("<rp>)</rp>", "<rp>》</rp>")
+        # 一部で半角カッコの代わりに全角カッコが使われていたのに対応 ex. n7856ev/66/
+        htm = htm.replace("<rp>（</rp>", "<rp>《</rp>")
+        htm = htm.replace("<rp>）</rp>", "<rp>》</rp>")
     hon_soup = BeautifulSoup(htm, "html.parser")
     # サブタイトルを取得
     subt = get_subtitle(hon_soup, pre_chap, textF)
