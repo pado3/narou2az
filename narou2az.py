@@ -182,7 +182,8 @@ def get_info(ncode, textF, noinF):
     # いよいよ作品情報を取得
     info_soup = BeautifulSoup(info_res, "html.parser")
     # 全話数を取得
-    pre_info = info_soup.select_one("#pre_info").text
+    # 全話数が1000を超えると「全1,001部分」とカンマが入るのを除去する（ここで他には入らない）
+    pre_info = info_soup.select_one("#pre_info").text.replace(',', '')
     try:
         num_parts = int(re.search(r"全([0-9]+)部分", pre_info).group(1))
     # ここに落ちるのは、単話作品のとき
