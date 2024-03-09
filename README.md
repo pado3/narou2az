@@ -6,6 +6,8 @@ Make Aozora-bunko format text from syosetu.com (Syosetsuka ni narou)
 
 【2023/05/24】 update: 1000話を超える作品への対応(ex. n8920ex)
 
+【2024/03/09】 update: リクエストヘッダの付加
+
 <hr>
 開発経過と内容については次のブログ記事を参照下さい。なお、こちらのリポジトリでの初期バージョンは2021/05/03の大文字NCODE対応時です。
 
