@@ -171,19 +171,28 @@ def get_info(ncode, textF, noinF):
         sys.exit("Nコードが見つかりませんでした: {}".format(ncode))
     ncode = ncode.lower()    # re.searchは正規表現に従って小文字を返すが念のため
     # 作品情報ページのチェック  ＃ 1行に書いていたら84文字でflake8に叱られた。
-    info_url =\
+    url =\
         "https://ncode.syosetu.com/novelview/infotop/ncode/{}/".format(ncode)
+    # ヘッダを付ける
+    headers = {
+        "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
+        AppleWebKit/537.36 (KHTML, like Gecko) \
+        Chrome/122.0.0.0 Safari/537.36"}
     # サイトが開けないことがあるのでtryが必要
     try:
-        info_res = request.urlopen(info_url)
+        # res = request.urlopen(url)
+        req = request.Request(url, headers=headers)
+        res = request.urlopen(req)
     # ここに落ちるのは、そのNコードの作品が無いか、サイトがメンテなどで落ちているとき
     except Exception:
         sys.exit("作品情報ページが開けませんでした: {}".format(info_url))
     # いよいよ作品情報を取得
-    info_soup = BeautifulSoup(info_res, "html.parser")
+    soup = BeautifulSoup(res, "html.parser")
+    res.close()
     # 全話数を取得
     # 全話数が1000を超えると「全1,001部分」とカンマが入るのを除去する（ここで他には入らない）
-    pre_info = info_soup.select_one("#pre_info").text.replace(',', '')
+    pre_info = soup.select_one("#pre_info").text.replace(',', '')
     try:
         num_parts = int(re.search(r"全([0-9]+)部分", pre_info).group(1))
     # ここに落ちるのは、単話作品のとき
@@ -191,7 +200,7 @@ def get_info(ncode, textF, noinF):
         sys.exit("ごめんなさい、単話作品は取得できません。")
     print("全話数：", num_parts, flush=True)
     # 表紙を取得
-    hyoshi = get_hyoshi(info_soup, textF)
+    hyoshi = get_hyoshi(soup, textF)
     return ncode, num_parts, hyoshi
 
 
@@ -244,7 +253,15 @@ def get_honbun(ncode, part, pre_chap, textF):
     print("{:d}, ".format(part), end="", flush=True)
     # 本文ページのURL
     url = "https://ncode.syosetu.com/{}/{:d}/".format(ncode, part)
-    res = request.urlopen(url)
+    # ヘッダを付ける
+    headers = {
+        "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
+        AppleWebKit/537.36 (KHTML, like Gecko) \
+        Chrome/122.0.0.0 Safari/537.36"}
+    # res = request.urlopen(url)
+    req = request.Request(url, headers=headers)
+    res = request.urlopen(req)
     # ルビ変換に関わらず処理が統一できるように、パースする前にテキスト化
     htm = res.read().decode("utf-8")
     # textFがFalseなら青空文庫形式のルビを仕込む
@@ -255,13 +272,14 @@ def get_honbun(ncode, part, pre_chap, textF):
         # 一部で半角カッコの代わりに全角カッコが使われていたのに対応 ex. n7856ev/66/
         htm = htm.replace("<rp>（</rp>", "<rp>《</rp>")
         htm = htm.replace("<rp>）</rp>", "<rp>》</rp>")
-    hon_soup = BeautifulSoup(htm, "html.parser")
+    soup = BeautifulSoup(htm, "html.parser")
+    res.close()
     # サブタイトルを取得
-    subt = get_subtitle(hon_soup, pre_chap, textF)
+    subt = get_subtitle(soup, pre_chap, textF)
     honbun = subt[0]
     pre_chap = subt[1]
     # 本文はテキストとして取得。ルビは先に変換してある
-    honbun += hon_soup.select_one("#novel_honbun").text
+    honbun += soup.select_one("#novel_honbun").text
     if textF:
         honbun += "\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
     else:
