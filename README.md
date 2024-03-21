@@ -12,6 +12,8 @@ Make Aozora-bunko format text from syosetu.com (Syosetsuka ni narou)
 
 【2024/03/21】 update: 3/15のアップデートでのtypoを修正
 
+【2024/03/21】 append: 「読書尚友」で読むときにルビ表示が乱れることの対策を追加(narou2az_d.py, ruby_chk.py, ruby_conv.py)
+
 <hr>
 開発経過と内容については次のブログ記事を参照下さい。なお、こちらのリポジトリでの初期バージョンは2021/05/03の大文字NCODE対応時です。
 
@@ -26,5 +28,7 @@ Make Aozora-bunko format text from syosetu.com (Syosetsuka ni narou)
 2021/05/03 「なろう一括取得から青空文庫形式」の大文字NCODE対応(*1) https://pado.tea-nifty.com/top/2021/05/post-d496bf.html 
 
 2021/05/03 「なろう一括取得から青空文庫形式」のバージョン管理をGitHubに移します（2021/06/17追記） https://pado.tea-nifty.com/top/2021/05/post-18da7d.html 
+
+2024/03/21 「なろう」から取得した青空文庫形式ファイルと「読書尚友」の相性対策 https://pado.tea-nifty.com/top/2024/03/post-fdf665.html
 
 *1 : その時点での旧版も掲載しています
