@@ -10,6 +10,8 @@ Make Aozora-bunko format text from syosetu.com (Syosetsuka ni narou)
 
 【2024/03/15】 update: リニューアルに伴い作品情報ページの話数が「部分」から「エピソード」に変わったことへ対応
 
+【2024/03/21】 update: 3/15のアップデートでのtypoを修正
+
 <hr>
 開発経過と内容については次のブログ記事を参照下さい。なお、こちらのリポジトリでの初期バージョンは2021/05/03の大文字NCODE対応時です。
 
