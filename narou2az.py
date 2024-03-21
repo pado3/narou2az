@@ -186,7 +186,7 @@ def get_info(ncode, textF, noinF):
         res = request.urlopen(req)
     # ここに落ちるのは、そのNコードの作品が無いか、サイトがメンテなどで落ちているとき
     except Exception:
-        sys.exit("作品情報ページが開けませんでした: {}".format(info_url))
+        sys.exit("作品情報ページが開けませんでした: {}".format(url))
     # いよいよ作品情報を取得
     soup = BeautifulSoup(res, "html.parser")
     res.close()
