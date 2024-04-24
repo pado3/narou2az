@@ -266,14 +266,26 @@ def get_honbun(ncode, part, pre_chap, textF):
     res = request.urlopen(req)
     # ルビ変換に関わらず処理が統一できるように、パースする前にテキスト化
     htm = res.read().decode("utf-8")
-    # textFがFalseなら青空文庫形式のルビを仕込む
-    if not textF:    # 1行に書いていたら130文字でflake8に一番叱られた。ここを直すのは簡単。
+    if not textF:    # 1行に書いていたら130文字でflake8に一番叱られた。
+        '''
+        # 「なろう」ルビ旧仕様
+        # ex. <ruby><rb>簀桁</rb><rp>(</rp><rt>すけた</rt><rp>)</rp></ruby>
         htm = htm.replace("<ruby><rb>", "<ruby>｜<rb>")
         htm = htm.replace("<rp>(</rp>", "<rp>《</rp>")
         htm = htm.replace("<rp>)</rp>", "<rp>》</rp>")
         # 一部で半角カッコの代わりに全角カッコが使われていたのに対応 ex. n7856ev/66/
         htm = htm.replace("<rp>（</rp>", "<rp>《</rp>")
         htm = htm.replace("<rp>）</rp>", "<rp>》</rp>")
+        '''
+        # 「なろう」ルビ新仕様対応、bs4がrb無しのrtを拾えないので直接青空形式ルビにする
+        # ex. <ruby>簀桁<rp>(</rp><rt>すけた</rt><rp>)</rp></ruby>
+        htm = htm.replace("<ruby>", "｜")
+        htm = htm.replace("<rp>(</rp><rt>", "《")
+        htm = htm.replace("</rt><rp>)</rp>", "》")
+        htm = htm.replace("</ruby>", "")
+        # 一部で半角カッコの代わりに全角カッコが使われていたのに対応 ex. n7856ev/66/
+        htm = htm.replace("<rp>（</rp><rt>", "《")
+        htm = htm.replace("</rt><rp>）</rp>", "》")
     soup = BeautifulSoup(htm, "html.parser")
     res.close()
     # サブタイトルを取得
