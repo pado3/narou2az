@@ -14,6 +14,8 @@ Make Aozora-bunko format text from syosetu.com (Syosetsuka ni narou)
 
 【2024/03/21】 append: 「読書尚友」で読むときにルビ表示が乱れることの対策を追加(narou2az_d.py, ruby_chk.py, ruby_conv.py)
 
+【2024/04/25】 update: ルビ仕様の変更へ対応(narou2az.py, narou2az_d.py)
+
 <hr>
 開発経過と内容については次のブログ記事を参照下さい。なお、こちらのリポジトリでの初期バージョンは2021/05/03の大文字NCODE対応時です。
 
