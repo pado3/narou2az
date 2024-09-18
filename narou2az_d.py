@@ -6,6 +6,7 @@
 #   旧：<ruby><rb>簀桁</rb><rp>(</rp><rt>すけた</rt><rp>)</rp></ruby>
 #   新：<ruby>簀桁<rp>(</rp><rt>すけた</rt><rp>)</rp></ruby>
 #   bs4が<rb>無しの<ruby>に非対応のようで<rt>が拾えない→ルビはテキストとして処理する
+# 2024/09/19「なろう」のタグ変更に対応（章・節タイトル、連番、本文）
 import os
 import re
 import ssl
@@ -79,9 +80,12 @@ def get_subtitle(hon_soup, pre_chap, textF):
     # サブタイの文字列を初期化
     subt = ""
     # 章タイトルと節タイトルと連番を取得
-    chap_t = hon_soup.find(class_="chapter_title")
-    sect_t = hon_soup.find(class_="novel_subtitle")
-    novel_n = hon_soup.select_one("#novel_no").text.strip().split("/")[0]
+	# 2024/09/19 なろう仕様変更
+    chap_group = hon_soup.find(class_="c-announce-box")
+    chap_t = chap_group.find("span")
+    sect_t = hon_soup.find(class_="p-novel__title--rensai")
+    novel_n = hon_soup.find(class_="p-novel__number")
+    novel_n = novel_n.text.strip().split("/")[0]
     # 章タイトルがある場合
     if chap_t:      # 前はchap_t is not Noneと書いていた
         # 前の章タイトルと違ったら今章タイトルを代入し章タイトルを付ける
@@ -301,7 +305,7 @@ def get_honbun(ncode, part, pre_chap, textF):
     honbun = subt[0]
     pre_chap = subt[1]
     # 本文はテキストとして取得。ルビは先に変換してある
-    honbun += soup.select_one("#novel_honbun").text
+    honbun += soup.find(class_="p-novel__body").text    # 2024/09/19
     if textF:
         honbun += "\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
     else:
