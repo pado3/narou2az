@@ -80,7 +80,7 @@ def get_subtitle(hon_soup, pre_chap, textF):
     # サブタイの文字列を初期化
     subt = ""
     # 章タイトルと節タイトルと連番を取得
-	# 2024/09/19 なろう仕様変更
+    # 2024/09/19 なろう仕様変更
     chap_group = hon_soup.find(class_="c-announce-box")
     chap_t = chap_group.find("span")
     sect_t = hon_soup.find(class_="p-novel__title--rensai")
