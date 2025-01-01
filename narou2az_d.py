@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # 「なろう」で《hoge》をルビ以外にも使っていると読書尚友でルビ扱いされる(ex. n4764du)。
 # 文中の《》を全て≪≫へ変換した上で、ルビの部分を《》に戻すスクリプト。
-# 2024/03/15 narou2az.pyにruby_d()関数を追加したもの
+# 2025/01/02 本文から前書き・後書きを取り除く
+# 2024/09/19「なろう」のタグ変更に対応（章・節タイトル、連番、本文）
 # 2024/04/24「なろう」のルビ仕様変更とbs4との相性に暫定対応：
 #   旧：<ruby><rb>簀桁</rb><rp>(</rp><rt>すけた</rt><rp>)</rp></ruby>
 #   新：<ruby>簀桁<rp>(</rp><rt>すけた</rt><rp>)</rp></ruby>
 #   bs4が<rb>無しの<ruby>に非対応のようで<rt>が拾えない→ルビはテキストとして処理する
-# 2024/09/19「なろう」のタグ変更に対応（章・節タイトル、連番、本文）
+# 2024/03/15 narou2az.pyにruby_d()関数を追加したもの
 import os
 import re
 import ssl
@@ -20,7 +21,7 @@ dir_base = os.path.dirname(os.path.abspath(__file__))
 
 # Python3.4.3以上では証明書とホスト名の検証を行うのがデフォ。検証しないと指定する。
 # （単にバージョンで分けて良いのか、環境依存が無いのかは不明）
-if int('{}{}{}'.format(*sys.version_info[0:3])) >= 343:
+if int('{}{}{}'.format(*sys.version_info[0:3])) >= 343:    # 3.10以上は31xx
     ssl._create_default_https_context = ssl._create_unverified_context
 
 
@@ -134,7 +135,8 @@ def get_existing_set(ncode):
                       if re_part.match(fn)}
     # 動作としては次の2行と同じ。下の方が分かりやすいがradonによる循環的複雑度CCは3→4に悪化
     # list_parts = [fn for fn in os.listdir(novel_dir) if re_part.match(fn)]
-    # existing_parts = set(int(re_part.match(fn).group(1)) for fn in list_parts)
+    # existing_parts = \
+    #     set(int(re_part.match(fn).group(1)) for fn in list_parts)
     return existing_parts
 
 
@@ -304,8 +306,18 @@ def get_honbun(ncode, part, pre_chap, textF):
     subt = get_subtitle(soup, pre_chap, textF)
     honbun = subt[0]
     pre_chap = subt[1]
-    # 本文はテキストとして取得。ルビは先に変換してある
-    honbun += soup.find(class_="p-novel__body").text    # 2024/09/19
+    # 本文はbodyから前書きと後書きを取り除いたもの 2025/01/02
+    body = soup.find(class_="p-novel__body")
+    preface = body.find(class_="p-novel__text--preface")
+    afterword = body.find(class_="p-novel__text--afterword")
+    # いきなりextract()しようとすると、無かったときに'NoneType'が出る
+    if preface:     # 前書きがあった場合、これをbodyから除外する
+        body.find(class_="p-novel__text--preface").extract()
+    if afterword:   # 後書きがあった場合、これをbodyから除外する
+        body.find(class_="p-novel__text--afterword").extract()
+    # 本文はテキストとして取得。ルビは先に変換し、前書き・後書きは除外してある
+    honbun += body.text
+    # honbun += soup.find(class_="p-novel__body").text    # 2024/09/19
     if textF:
         honbun += "\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
     else:
