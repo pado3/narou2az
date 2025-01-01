@@ -18,6 +18,8 @@ Make Aozora-bunko format text from syosetu.com (Syosetsuka ni narou)
 
 【2024/09/19】 update: 章・節タイトル、連番、本文のタグ仕様変更に対応(narou2az.py, narou2az_d.py)
 
+【2025/01/02】 update: 本文から前書き・後書きを取り除いた(narou2az.py, narou2az_d.py)
+
 <hr>
 開発経過と内容については次のブログ記事を参照下さい。なお、こちらのリポジトリでの初期バージョンは2021/05/03の大文字NCODE対応時です。
 
