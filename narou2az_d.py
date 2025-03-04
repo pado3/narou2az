@@ -147,13 +147,19 @@ def get_hyoshi(info_soup, textF):
     hyoshi = "作　"
     # table id="noveltable1"の2つ目のtrのtdエレメントが著者名
     # 1行に書いていたら83文字でflake8に叱られた。
-    hyoshi += (info_soup.select_one("#noveltable1")
-               .select("tr")[1].select_one("td").text) + "\n"
+    # hyoshi += (info_soup.select_one("#noveltable1")
+    #            .select("tr")[1].select_one("td").text) + "\n"
+    # 2025/03/04 タグ変更 class"p-infotop-data"の3番目のddが作者名
+    hyoshi += (info_soup.find(class_="p-infotop-data")
+                 .select("dd")[2].text) + "\n"
     # タイトル取得 h1タグはタイトルのみ
     title = info_soup.select_one("h1").text
-    # あらすじ取得 table id="noveltable1"のclass="ex"の2つ目のテキスト
+    # あらすじ取得
+    # table id="noveltable1"のclass="ex"の2つ目のテキスト
     # (=1つ目のtrのtdだが、著者名とは違う取り方をしてみた)
-    synop = info_soup.select_one("#noveltable1").select(".ex")[1].text
+    # synop = info_soup.select_one("#noveltable1").select(".ex")[1].text
+    # 2025/03/04 タグ変更 class"p-infotop-data"の1番目のddがあらすじ
+    synop = info_soup.find(class_="p-infotop-data").select("dd")[0].text
     if textF:
         # textFがTrueならテキスト形式でタイトルだけ
         hyoshi += title + "\n"
@@ -204,8 +210,10 @@ def get_info(ncode, textF, noinF):
     soup = BeautifulSoup(res, "html.parser")
     res.close()
     # 全話数を取得
-    # 全話数が1000を超えると「全1,001部分」とカンマが入るのを除去する（ここで他には入らない）
-    pre_info = soup.select_one("#pre_info").text.replace(',', '')
+    # 全話数が1000を超えると「全1,001部分」とカンマが入るのを除去する（,以外はない）
+    # pre_info = soup.select_one("#pre_info").text.replace(',', '')
+    # 2025/03/04 タグ変更
+    pre_info = soup.find(class_="p-infotop-type__allep").text.replace(',', '')
     try:
         # 2024/03/14 リニューアル、「部分」→「エピソード」
         # num_parts = int(re.search(r"全([0-9]+)部分", pre_info).group(1))
