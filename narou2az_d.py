@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # 「なろう」で《hoge》をルビ以外にも使っていると読書尚友でルビ扱いされる(ex. n4764du)。
 # 文中の《》を全て≪≫へ変換した上で、ルビの部分を《》に戻すスクリプト。
+# 2025/09/09 シリーズ名があると作者名が拾えなかったのを修正し、シリーズ名を取得する
 # 2025/01/02 本文から前書き・後書きを取り除く
 # 2024/09/19「なろう」のタグ変更に対応（章・節タイトル、連番、本文）
 # 2024/04/24「なろう」のルビ仕様変更とbs4との相性に暫定対応：
@@ -144,14 +145,24 @@ def get_existing_set(ncode):
 # 表紙にするテキストを取得
 def get_hyoshi(info_soup, textF):
     # 著者名は全てにテキスト形式で付ける
-    hyoshi = "作　"
+    hyoshi = ""
     # table id="noveltable1"の2つ目のtrのtdエレメントが著者名
     # 1行に書いていたら83文字でflake8に叱られた。
     # hyoshi += (info_soup.select_one("#noveltable1")
     #            .select("tr")[1].select_one("td").text) + "\n"
     # 2025/03/04 タグ変更 class"p-infotop-data"の3番目のddが作者名
-    hyoshi += (info_soup.find(class_="p-infotop-data")
-                 .select("dd")[2].text) + "\n"
+    # 2025/09/09 シリーズの場合はシリーズ名と作者名を取得
+    dt2 = info_soup.find(class_="p-infotop-data").select("dt")[2].text
+    dd2 = info_soup.find(class_="p-infotop-data").select("dd")[2].text
+    dd3 = info_soup.find(class_="p-infotop-data").select("dd")[3].text
+    author = ""
+    series = ""
+    if dt2 == "作者名":     # 元々作者名の後に改行が入っているが、たぶんサイトのバグ
+        author = "作　" + dd2 + "\n"
+    else:
+        series = "シリーズ名　" + dd2 + "\n"
+        author = "作　" + dd3 + "\n"
+    hyoshi += author
     # タイトル取得 h1タグはタイトルのみ
     title = info_soup.select_one("h1").text
     # あらすじ取得
@@ -161,11 +172,12 @@ def get_hyoshi(info_soup, textF):
     # 2025/03/04 タグ変更 class"p-infotop-data"の1番目のddがあらすじ
     synop = info_soup.find(class_="p-infotop-data").select("dd")[0].text
     if textF:
-        # textFがTrueならテキスト形式でタイトルだけ
-        hyoshi += title + "\n"
+        # textFがTrueならテキスト形式でシリーズ名とタイトルだけ
+        hyoshi += series + title + "\n"
     else:
         # 青空文庫形式の注記とあらすじ
         hyoshi += "［＃ページの左右中央］\n"
+        hyoshi += series
         hyoshi += title + "［＃「" + title + "」は大見出し］\n［＃改ページ］\n"
         hyoshi += "あらすじ［＃「あらすじ」は中見出し］\n" + synop + "\n［＃改ページ］\n"
     return hyoshi
@@ -197,7 +209,7 @@ def get_info(ncode, textF, noinF):
         "User-Agent":
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
         AppleWebKit/537.36 (KHTML, like Gecko) \
-        Chrome/122.0.0.0 Safari/537.36"}
+        Chrome/140.0.0.0 Safari/537.36"}
     # サイトが開けないことがあるのでtryが必要
     try:
         # res = request.urlopen(url)
