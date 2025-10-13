@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# 2025/10/13 作品タイトル取得修正、作品情報ページの表を辞書として取得して使用する
 # 2025/09/09 シリーズ名があると作者名が拾えなかったのを修正し、シリーズ名を取得する
 # 2025/01/02 本文から前書き・後書きを取り除く
 # 2024/09/19「なろう」のタグ変更に対応（章・節タイトル、連番、本文）
@@ -137,33 +138,38 @@ def get_existing_set(ncode):
 # 作品情報ページのスープとテキストフラグから、
 # 表紙にするテキストを取得
 def get_hyoshi(info_soup, textF):
-    # 著者名は全てにテキスト形式で付ける
-    hyoshi = ""
-    # table id="noveltable1"の2つ目のtrのtdエレメントが著者名
+    # table id="noveltable1"の2つ目のtrのtdエレメントが作者名
     # 1行に書いていたら83文字でflake8に叱られた。
     # hyoshi += (info_soup.select_one("#noveltable1")
     #            .select("tr")[1].select_one("td").text) + "\n"
     # 2025/03/04 タグ変更 class"p-infotop-data"の3番目のddが作者名
     # 2025/09/09 シリーズの場合はシリーズ名と作者名を取得
-    dt2 = info_soup.find(class_="p-infotop-data").select("dt")[2].text
-    dd2 = info_soup.find(class_="p-infotop-data").select("dd")[2].text
-    dd3 = info_soup.find(class_="p-infotop-data").select("dd")[3].text
-    author = ""
-    series = ""
-    if dt2 == "作者名":     # 元々作者名の後に改行が入っているが、たぶんサイトのバグ
-        author = "作　" + dd2 + "\n"
+    # 2025/10/13 作品情報ページの表を辞書として取得して使用
+    info_dic = {}
+    for dl in info_soup.find_all("dl", class_="p-infotop-data"):
+        keys = [dt.text.strip() for dt in dl.find_all("dt")]
+        values = [dd.text.strip() for dd in dl.find_all("dd")]
+        info_dic.update(dict(zip(keys, values)))
+    # 作者名
+    author = "作　" + info_dic.get("作者名") + "\n"
+    # シリーズ名はない場合があり、その時はgetがNoneを返す
+    series = info_dic.get("シリーズ")
+    if series is None:
+        series = ""
     else:
-        series = "シリーズ名　" + dd2 + "\n"
-        author = "作　" + dd3 + "\n"
-    hyoshi += author
-    # タイトル取得 h1タグはタイトルのみ
-    title = info_soup.select_one("h1").text
+        series = "シリーズ名　" + series + "\n"
+    # タイトル取得 h1タグはタイトルのみ 2025/10/13 h1タグ前後の改行を削除
+    title = info_soup.select_one("h1").text.strip()
     # あらすじ取得
     # table id="noveltable1"のclass="ex"の2つ目のテキスト
-    # (=1つ目のtrのtdだが、著者名とは違う取り方をしてみた)
+    # (=1つ目のtrのtdだが、作者名とは違う取り方をしてみた)
     # synop = info_soup.select_one("#noveltable1").select(".ex")[1].text
     # 2025/03/04 タグ変更 class"p-infotop-data"の1番目のddがあらすじ
-    synop = info_soup.find(class_="p-infotop-data").select("dd")[0].text
+    # synop = info_soup.find(class_="p-infotop-data").select("dd")[0].text
+    # 2025/09/09 辞書からもらう
+    synop = info_dic.get("あらすじ")
+    # ここから表紙データを作成する。先頭は作者名
+    hyoshi = author
     if textF:
         # textFがTrueならテキスト形式でシリーズ名とタイトルだけ
         hyoshi += series + title + "\n"
