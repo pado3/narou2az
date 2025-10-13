@@ -24,6 +24,8 @@ Make Aozora-bunko format text from syosetu.com (Syosetsuka ni narou)
 
 【2025/09/09】 update: シリーズ名がある場合の作者名との取り違えを修正し、シリーズ名も取得するようにした(narou2az.py, narou2az_d.py)
 
+【2025/10/13】 update: 作品タイトルタグの変更に対応、作者名・シリーズ名・あらすじを辞書から取得するようにした(narou2az.py, narou2az_d.py)
+
 <hr>
 開発経過と内容については次のブログ記事を参照下さい。なお、こちらのリポジトリでの初期バージョンは2021/05/03の大文字NCODE対応時です。
 
