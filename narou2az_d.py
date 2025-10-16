@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # 「なろう」で《hoge》をルビ以外にも使っていると読書尚友でルビ扱いされる(ex. n4764du)。
 # 文中の《》を全て≪≫へ変換した上で、ルビの部分を《》に戻すスクリプト。
+# 2025/10/16 見出しに[]や［］があると青空文庫形式で表示が乱れるため〔〕に置き換える
 # 2025/10/13 作品タイトル取得修正、作品情報ページの表を辞書として取得して使用する
 # 2025/09/09 シリーズ名があると作者名が拾えなかったのを修正し、シリーズ名を取得する
 # 2025/01/02 本文から前書き・後書きを取り除く
@@ -91,21 +92,26 @@ def get_subtitle(hon_soup, pre_chap, textF):
     novel_n = novel_n.text.strip().split("/")[0]
     # 章タイトルがある場合
     if chap_t:      # 前はchap_t is not Noneと書いていた
+        chap = chap_t.text
         # 前の章タイトルと違ったら今章タイトルを代入し章タイトルを付ける
-        if chap_t.text != pre_chap:
-            pre_chap = chap_t.text
-            subt += chap_t.text
+        if chap != pre_chap:
+            pre_chap = chap
             if textF:
-                subt += "\n"
+                subt += chap + "\n"
             else:    # 青空文庫形式の注記
-                subt += "［＃「" + chap_t.text + "」は中見出し］\n"
+                # 見出しに[]や［］があると表示が乱れるため〔〕に置き換える 2025/10/16
+                chap = chap.replace('[', '〔').replace(']', '〕')
+                chap = chap.replace('［', '〔').replace('］', '〕')
+                subt += chap + "［＃「" + chap + "」は中見出し］\n"
     # 節タイトルを付ける 2020/07/15 連番付与
-    # 検索のため番号のあとにspを1つ付けたが、読書尚友では無視されてしまった
-    sect = sect_t.text + " #" + novel_n + " "
+    sect = sect_t.text
     if textF:
-        subt += sect + "\n"
+        subt += sect + " #" + novel_n + " \n"
     else:    # 青空文庫形式の注記
-        subt += sect + "［＃「" + sect + "」は小見出し］\n"
+        # 見出しに[]や［］があると表示が乱れるため〔〕に置き換える 2025/10/16
+        sect = sect.replace('[', '〔').replace(']', '〕')
+        sect = sect.replace('［', '〔').replace('］', '〕')
+        subt += sect + " #" + novel_n + " " + "［＃「" + sect + "」は小見出し］\n"
     return subt, pre_chap
 
 
@@ -184,6 +190,9 @@ def get_hyoshi(info_soup, textF):
         # 青空文庫形式の注記とあらすじ
         hyoshi += "［＃ページの左右中央］\n"
         hyoshi += series
+        # 見出しに[]や［］があると表示が乱れるため〔〕に置き換える 2025/10/16
+        title = title.replace('[', '〔').replace(']', '〕')
+        title = title.replace('［', '〔').replace('］', '〕')
         hyoshi += title + "［＃「" + title + "」は大見出し］\n［＃改ページ］\n"
         hyoshi += "あらすじ［＃「あらすじ」は中見出し］\n" + synop + "\n［＃改ページ］\n"
     return hyoshi
