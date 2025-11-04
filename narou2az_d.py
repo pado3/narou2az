@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # 「なろう」で《hoge》をルビ以外にも使っていると読書尚友でルビ扱いされる(ex. n4764du)。
 # 文中の《》を全て≪≫へ変換した上で、ルビの部分を《》に戻すスクリプト。
+# 2025/11/04 listdirとsetの組合せで順序不定になる可能性を潰すなどの手直し
 # 2025/10/16 見出しに[]や［］があると青空文庫形式で表示が乱れるため〔〕に置き換える
 # 2025/10/13 作品タイトル取得修正、作品情報ページの表を辞書として取得して使用する
 # 2025/09/09 シリーズ名があると作者名が拾えなかったのを修正し、シリーズ名を取得する
@@ -216,9 +217,8 @@ def get_info(ncode, textF, noinF):
     else:    # 入力してもらっても見つからなかったとき
         sys.exit("Nコードが見つかりませんでした: {}".format(ncode))
     ncode = ncode.lower()    # re.searchは正規表現に従って小文字を返すが念のため
-    # 作品情報ページのチェック  ＃ 1行に書いていたら84文字でflake8に叱られた。
-    url =\
-        "https://ncode.syosetu.com/novelview/infotop/ncode/{}/".format(ncode)
+    # 作品情報ページのチェック
+    url = "https://ncode.syosetu.com/novelview/infotop/ncode/{}/".format(ncode)
     # ヘッダを付ける
     headers = {
         "User-Agent":
@@ -337,19 +337,17 @@ def get_honbun(ncode, part, pre_chap, textF):
         htm = htm.replace("</rt><rp>）</rp>", "》")
     soup = BeautifulSoup(htm, "html.parser")
     res.close()
-    # サブタイトルを取得
-    subt = get_subtitle(soup, pre_chap, textF)
-    honbun = subt[0]
-    pre_chap = subt[1]
+    # サブタイと今章タイトルを取得して本文冒頭にする（2025/11/04手直し）
+    honbun, pre_chap = get_subtitle(soup, pre_chap, textF)
     # 本文はbodyから前書きと後書きを取り除いたもの 2025/01/02
     body = soup.find(class_="p-novel__body")
     preface = body.find(class_="p-novel__text--preface")
     afterword = body.find(class_="p-novel__text--afterword")
     # いきなりextract()しようとすると、無かったときに'NoneType'が出る
     if preface:     # 前書きがあった場合、これをbodyから除外する
-        body.find(class_="p-novel__text--preface").extract()
+        preface.extract()
     if afterword:   # 後書きがあった場合、これをbodyから除外する
-        body.find(class_="p-novel__text--afterword").extract()
+        afterword.extract()
     # 本文はテキストとして取得。ルビは先に変換し、前書き・後書きは除外してある
     honbun += body.text
     # honbun += soup.find(class_="p-novel__body").text    # 2024/09/19
@@ -391,8 +389,8 @@ def save_matome(ncode):
     if os.path.exists(matometxt):
         os.rename(matometxt, matomebak)
     with open(matometxt, 'w', encoding="utf-8") as savefile:
-        # set順に読み込んで保存
-        for part in existing_parts:
+        # setをsortした順に読み込んで保存 (2025/11/04 setは順序不定と気付いて手直し)
+        for part in sorted(existing_parts):
             ptxt = os.path.join(novel_dir, "{}-{:03}.txt".format(ncode, part))
             # WindowsのAnacondaでデフォのSJISでないというエラーが出たため指定
             savefile.write(
